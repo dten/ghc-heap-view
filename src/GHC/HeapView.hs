@@ -739,6 +739,9 @@ ppClosure showBox prec c = case c of
         "_other"
     UnsupportedClosure {..} ->
         "_unsupported"
+    SmallMutArrClosure {..} -> app
+        ["[", intercalate ", " (shorten (map (showBox 10) mccPayload)),"]"]
+
   where
     app [a] = a  ++ "()"
     app xs = addBraces (10 <= prec) (intercalate " " xs)
