@@ -57,6 +57,7 @@ Flag prim-supports-any
     Default: False
 
 Flag ghc_8_0
+    Default: False
 
 Flag ghc_8_2
 
