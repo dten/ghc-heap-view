@@ -558,24 +558,57 @@ getClosureData :: a -> IO Closure
 getClosureData x = do
     (iptr, wds, ptrs) <- getClosureRaw x
     itbl <- peek iptr
-    case tipe itbl of
-        t | t >= CONSTR
-#if defined(GHC_8_0)
-          , t <= CONSTR_NOCAF_STATIC
-#else
-          , t <= CONSTR_NOCAF
-#endif
-          -> do
+    let handleCONSTR = do
             (pkg, modl, name) <- dataConInfoPtrToNames iptr
             if modl == "ByteCodeInstr" && name == "BreakInfo"
               then return $ UnsupportedClosure itbl
               else return $ ConsClosure itbl ptrs (drop (length ptrs + 1) wds) pkg modl name
-
-        t | t >= THUNK && t <= THUNK_STATIC -> do
+    let handleThunk = do
             return $ ThunkClosure itbl ptrs (drop (length ptrs + 2) wds)
-
-        t | t >= FUN && t <= FUN_STATIC -> do
+    let handleFun = do
             return $ FunClosure itbl ptrs (drop (length ptrs + 1) wds)
+    let handleMutArr = do
+            unless (length wds >= 3) $
+                fail $ "Expected at least 3 words to MUT_ARR_PTRS_* found " ++ show (length wds)
+            return $ MutArrClosure itbl (wds !! 1) (wds !! 2) ptrs
+    let handleMutSmallArr = do
+            unless (length wds >= 1) $
+                fail $ "Expected at least 1 word to SMALL_MUT_ARR_PTRS_* "
+                        ++ "found " ++ show (length wds)
+            pure $ SmallMutArrClosure itbl (wds !! 0) ptrs
+    let handleMVar = do
+            unless (length ptrs >= 3) $
+                fail $ "Expected at least 3 ptrs to MVAR, found " ++ show (length ptrs)
+            return $ MVarClosure itbl (ptrs !! 0) (ptrs !! 1) (ptrs !! 2)
+    case tipe itbl of
+        CONSTR -> handleCONSTR
+        CONSTR_1_0 -> handleCONSTR
+        CONSTR_0_1 -> handleCONSTR
+        CONSTR_2_0 -> handleCONSTR
+        CONSTR_1_1 -> handleCONSTR
+        CONSTR_0_2 -> handleCONSTR
+        CONSTR_NOCAF -> handleCONSTR
+
+        THUNK -> handleThunk
+        THUNK_1_0 -> handleThunk
+        THUNK_0_1 -> handleThunk
+        THUNK_2_0 -> handleThunk
+        THUNK_1_1 -> handleThunk
+        THUNK_0_2 -> handleThunk
+        THUNK_STATIC -> handleThunk
+
+        THUNK_SELECTOR -> do
+            unless (length ptrs >= 1) $
+                fail "Expected at least 1 ptr argument to THUNK_SELECTOR"
+            return $ SelectorClosure itbl (head ptrs)
+
+        FUN -> handleFun
+        FUN_1_0 -> handleFun
+        FUN_0_1 -> handleFun
+        FUN_2_0 -> handleFun
+        FUN_1_1 -> handleFun
+        FUN_0_2 -> handleFun
+        FUN_STATIC -> handleFun
 
         AP -> do
             unless (length ptrs >= 1) $
@@ -601,11 +634,6 @@ getClosureData x = do
             unless (length ptrs >= 1) $
                 fail "Expected at least 1 ptr argument to AP_STACK"
             return $ APStackClosure itbl (head ptrs) (tail ptrs)
-
-        THUNK_SELECTOR -> do
-            unless (length ptrs >= 1) $
-                fail "Expected at least 1 ptr argument to THUNK_SELECTOR"
-            return $ SelectorClosure itbl (head ptrs)
 
         IND -> do
             unless (length ptrs >= 1) $
@@ -635,34 +663,51 @@ getClosureData x = do
                 fail $ "Expected at least 2 words to ARR_WORDS, found " ++ show (length wds)
             return $ ArrWordsClosure itbl (wds !! 1) (drop 2 wds)
 
-        t | t >= MUT_ARR_PTRS_CLEAN || t <= MUT_ARR_PTRS_FROZEN_CLEAN -> do
-            unless (length wds >= 3) $
-                fail $ "Expected at least 3 words to MUT_ARR_PTRS_* found " ++ show (length wds)
-            return $ MutArrClosure itbl (wds !! 1) (wds !! 2) ptrs
+        MUT_ARR_PTRS_CLEAN -> handleMutArr
+        MUT_ARR_PTRS_DIRTY -> handleMutArr
+        MUT_ARR_PTRS_FROZEN_DIRTY -> handleMutArr
+        MUT_ARR_PTRS_FROZEN_CLEAN -> handleMutArr
 
-        t | t >= SMALL_MUT_ARR_PTRS_CLEAN && t <= SMALL_MUT_ARR_PTRS_FROZEN_DIRTY -> do
-            unless (length wds >= 1) $
-                fail $ "Expected at least 1 word to SMALL_MUT_ARR_PTRS_* "
-                        ++ "found " ++ show (length wds)
-            pure $ SmallMutArrClosure itbl (wds !! 0) ptrs
+        SMALL_MUT_ARR_PTRS_CLEAN -> handleMutSmallArr
+        SMALL_MUT_ARR_PTRS_DIRTY -> handleMutSmallArr
+        SMALL_MUT_ARR_PTRS_FROZEN_DIRTY_CLEAN -> handleMutSmallArr
+        SMALL_MUT_ARR_PTRS_FROZEN_DIRTY -> handleMutSmallArr
 
-        t | t == MUT_VAR_CLEAN || t == MUT_VAR_DIRTY ->
+        MUT_VAR_CLEAN ->
             return $ MutVarClosure itbl (head ptrs)
 
-        t | t == MVAR_CLEAN || t == MVAR_DIRTY -> do
-            unless (length ptrs >= 3) $
-                fail $ "Expected at least 3 ptrs to MVAR, found " ++ show (length ptrs)
-            return $ MVarClosure itbl (ptrs !! 0) (ptrs !! 1) (ptrs !! 2)
+        MUT_VAR_DIRTY ->
+            return $ MutVarClosure itbl (head ptrs)
+
+        MVAR_CLEAN -> handleMVar
+        MVAR_DIRTY -> handleMVar
 
         BLOCKING_QUEUE ->
             return $ OtherClosure itbl ptrs wds
-        --    return $ BlockingQueueClosure itbl
-        --        (ptrs !! 0) (ptrs !! 1) (ptrs !! 2) (ptrs !! 3)
 
-        --  return $ OtherClosure itbl ptrs wds
-        --
-        _ ->
-            return $ UnsupportedClosure itbl
+        INVALID_OBJECT -> return $ UnsupportedClosure itbl
+
+        RET_BCO -> return $ UnsupportedClosure itbl
+        RET_SMALL -> return $ UnsupportedClosure itbl
+        RET_BIG -> return $ UnsupportedClosure itbl
+        RET_FUN -> return $ UnsupportedClosure itbl
+
+        UPDATE_FRAME -> return $ UnsupportedClosure itbl
+        CATCH_FRAME -> return $ UnsupportedClosure itbl
+        UNDERFLOW_FRAME -> return $ UnsupportedClosure itbl
+        STOP_FRAME -> return $ UnsupportedClosure itbl
+
+        TVAR -> return $ UnsupportedClosure itbl
+        WEAK -> return $ UnsupportedClosure itbl
+        PRIM -> return $ UnsupportedClosure itbl
+        MUT_PRIM -> return $ UnsupportedClosure itbl
+        TSO -> return $ UnsupportedClosure itbl
+        STACK -> return $ UnsupportedClosure itbl
+        TREC_CHUNK -> return $ UnsupportedClosure itbl
+        ATOMICALLY_FRAME -> return $ UnsupportedClosure itbl
+        CATCH_RETRY_FRAME -> return $ UnsupportedClosure itbl
+        CATCH_STM_FRAME -> return $ UnsupportedClosure itbl
+        WHITEHOLE -> return $ UnsupportedClosure itbl
 
 -- | Like 'getClosureData', but taking a 'Box', so it is easier to work with.
 getBoxedClosureData :: Box -> IO Closure

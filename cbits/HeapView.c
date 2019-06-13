@@ -28,89 +28,70 @@ gtc_heap_view_closure_ptrs_in_large_bitmap(StgClosure *ptrs[], StgWord *nptrs, S
 
 // from rts/Printer.c
 char *gtc_heap_view_closure_type_names[] = {
- [INVALID_OBJECT]                   = "INVALID_OBJECT",
- [CONSTR]                           = "CONSTR",
- [CONSTR_1_0]                       = "CONSTR_1_0",
- [CONSTR_0_1]                       = "CONSTR_0_1",
- [CONSTR_2_0]                       = "CONSTR_2_0",
- [CONSTR_1_1]                       = "CONSTR_1_1",
- [CONSTR_0_2]                       = "CONSTR_0_2",
-#if defined(GHC_8_0)
- [CONSTR_STATIC]                    = "CONSTR_STATIC",
- [CONSTR_NOCAF_STATIC]              = "CONSTR_NOCAF_STATIC",
-#else
- [CONSTR_NOCAF]                     = "CONSTR_NOCAF",
-#endif
- [FUN]                              = "FUN",
- [FUN_1_0]                          = "FUN_1_0",
- [FUN_0_1]                          = "FUN_0_1",
- [FUN_2_0]                          = "FUN_2_0",
- [FUN_1_1]                          = "FUN_1_1",
- [FUN_0_2]                          = "FUN_0_2",
- [FUN_STATIC]                       = "FUN_STATIC",
- [THUNK]                            = "THUNK",
- [THUNK_1_0]                        = "THUNK_1_0",
- [THUNK_0_1]                        = "THUNK_0_1",
- [THUNK_2_0]                        = "THUNK_2_0",
- [THUNK_1_1]                        = "THUNK_1_1",
- [THUNK_0_2]                        = "THUNK_0_2",
- [THUNK_STATIC]                     = "THUNK_STATIC",
- [THUNK_SELECTOR]                   = "THUNK_SELECTOR",
- [BCO]                              = "BCO",
- [AP]                               = "AP",
- [PAP]                              = "PAP",
- [AP_STACK]                         = "AP_STACK",
- [IND]                              = "IND",
-#if defined(GHC_8_0)
- [IND_PERM]                         = "IND_PERM",
-#endif
- [IND_STATIC]                       = "IND_STATIC",
- [RET_BCO]                          = "RET_BCO",
- [RET_SMALL]                        = "RET_SMALL",
- [RET_BIG]                          = "RET_BIG",
- [RET_FUN]                          = "RET_FUN",
- [UPDATE_FRAME]                     = "UPDATE_FRAME",
- [CATCH_FRAME]                      = "CATCH_FRAME",
- [UNDERFLOW_FRAME]                  = "UNDERFLOW_FRAME",
- [STOP_FRAME]                       = "STOP_FRAME",
- [BLACKHOLE]                        = "BLACKHOLE",
- [BLOCKING_QUEUE]                   = "BLOCKING_QUEUE",
- [MVAR_CLEAN]                       = "MVAR_CLEAN",
- [MVAR_DIRTY]                       = "MVAR_DIRTY",
- [ARR_WORDS]                        = "ARR_WORDS",
- [MUT_ARR_PTRS_CLEAN]               = "MUT_ARR_PTRS_CLEAN",
- [MUT_ARR_PTRS_DIRTY]               = "MUT_ARR_PTRS_DIRTY",
-#if defined(GHC_8_6)
- [MUT_ARR_PTRS_FROZEN_DIRTY]        = "MUT_ARR_PTRS_FROZEN_DIRTY",
- [MUT_ARR_PTRS_FROZEN_CLEAN]        = "MUT_ARR_PTRS_FROZEN_CLEAN",
-#else
- [MUT_ARR_PTRS_FROZEN0]             = "MUT_ARR_PTRS_FROZEN0",
- [MUT_ARR_PTRS_FROZEN]              = "MUT_ARR_PTRS_FROZEN",
-#endif
- [MUT_VAR_CLEAN]                    = "MUT_VAR_CLEAN",
- [MUT_VAR_DIRTY]                    = "MUT_VAR_DIRTY",
- [WEAK]                             = "WEAK",
- [PRIM]	                            = "PRIM",
- [MUT_PRIM]                         = "MUT_PRIM",
- [TSO]                              = "TSO",
- [STACK]                            = "STACK",
- [TREC_CHUNK]                       = "TREC_CHUNK",
- [ATOMICALLY_FRAME]                 = "ATOMICALLY_FRAME",
- [CATCH_RETRY_FRAME]                = "CATCH_RETRY_FRAME",
- [CATCH_STM_FRAME]                  = "CATCH_STM_FRAME",
- [WHITEHOLE]                        = "WHITEHOLE",
- [SMALL_MUT_ARR_PTRS_CLEAN]         = "SMALL_MUT_ARR_PTRS_CLEAN",
- [SMALL_MUT_ARR_PTRS_DIRTY]         = "SMALL_MUT_ARR_PTRS_DIRTY",
-#if defined(GHC_8_6)
- [SMALL_MUT_ARR_PTRS_FROZEN_CLEAN]  = "SMALL_MUT_ARR_PTRS_FROZEN_CLEAN",
- [SMALL_MUT_ARR_PTRS_FROZEN_DIRTY]  = "SMALL_MUT_ARR_PTRS_FROZEN_DIRTY",
-#else
- [SMALL_MUT_ARR_PTRS_FROZEN0]       = "SMALL_MUT_ARR_PTRS_FROZEN0",
- [SMALL_MUT_ARR_PTRS_FROZEN]        = "SMALL_MUT_ARR_PTRS_FROZEN",
-#endif
-#if defined(GHC_8_2)
- [COMPACT_NFDATA]                   = "COMPACT_NFDATA",
-#endif
+ [INVALID_OBJECT]        = "INVALID_OBJECT",
+ [CONSTR]                = "CONSTR",
+ [CONSTR_1_0]            = "CONSTR_1_0",
+ [CONSTR_0_1]            = "CONSTR_0_1",
+ [CONSTR_2_0]            = "CONSTR_2_0",
+ [CONSTR_1_1]            = "CONSTR_1_1",
+ [CONSTR_0_2]            = "CONSTR_0_2",
+ [CONSTR_NOCAF]          = "CONSTR_NOCAF",
+ [FUN]                   = "FUN",
+ [FUN_1_0]               = "FUN_1_0",
+ [FUN_0_1]               = "FUN_0_1",
+ [FUN_2_0]               = "FUN_2_0",
+ [FUN_1_1]               = "FUN_1_1",
+ [FUN_0_2]               = "FUN_0_2",
+ [FUN_STATIC]            = "FUN_STATIC",
+ [THUNK]                 = "THUNK",
+ [THUNK_1_0]             = "THUNK_1_0",
+ [THUNK_0_1]             = "THUNK_0_1",
+ [THUNK_2_0]             = "THUNK_2_0",
+ [THUNK_1_1]             = "THUNK_1_1",
+ [THUNK_0_2]             = "THUNK_0_2",
+ [THUNK_STATIC]          = "THUNK_STATIC",
+ [THUNK_SELECTOR]        = "THUNK_SELECTOR",
+ [BCO]                   = "BCO",
+ [AP]                    = "AP",
+ [PAP]                   = "PAP",
+ [AP_STACK]              = "AP_STACK",
+ [IND]                   = "IND",
+ [IND_STATIC]            = "IND_STATIC",
+ [RET_BCO]               = "RET_BCO",
+ [RET_SMALL]             = "RET_SMALL",
+ [RET_BIG]               = "RET_BIG",
+ [RET_FUN]               = "RET_FUN",
+ [UPDATE_FRAME]          = "UPDATE_FRAME",
+ [CATCH_FRAME]           = "CATCH_FRAME",
+ [UNDERFLOW_FRAME]       = "UNDERFLOW_FRAME",
+ [STOP_FRAME]            = "STOP_FRAME",
+ [BLOCKING_QUEUE]        = "BLOCKING_QUEUE",
+ [BLACKHOLE]             = "BLACKHOLE",
+ [MVAR_CLEAN]            = "MVAR_CLEAN",
+ [MVAR_DIRTY]            = "MVAR_DIRTY",
+ [TVAR]                  = "TVAR",
+ [ARR_WORDS]             = "ARR_WORDS",
+ [MUT_ARR_PTRS_CLEAN]    = "MUT_ARR_PTRS_CLEAN",
+ [MUT_ARR_PTRS_DIRTY]    = "MUT_ARR_PTRS_DIRTY",
+ [MUT_ARR_PTRS_FROZEN_DIRTY]  = "MUT_ARR_PTRS_FROZEN_DIRTY",
+ [MUT_ARR_PTRS_FROZEN_CLEAN]   = "MUT_ARR_PTRS_FROZEN_CLEAN",
+ [MUT_VAR_CLEAN]         = "MUT_VAR_CLEAN",
+ [MUT_VAR_DIRTY]         = "MUT_VAR_DIRTY",
+ [WEAK]                  = "WEAK",
+ [PRIM]                  = "PRIM",
+ [MUT_PRIM]              = "MUT_PRIM",
+ [TSO]                   = "TSO",
+ [STACK]                 = "STACK",
+ [TREC_CHUNK]            = "TREC_CHUNK",
+ [ATOMICALLY_FRAME]      = "ATOMICALLY_FRAME",
+ [CATCH_RETRY_FRAME]     = "CATCH_RETRY_FRAME",
+ [CATCH_STM_FRAME]       = "CATCH_STM_FRAME",
+ [WHITEHOLE]             = "WHITEHOLE",
+ [SMALL_MUT_ARR_PTRS_CLEAN] = "SMALL_MUT_ARR_PTRS_CLEAN",
+ [SMALL_MUT_ARR_PTRS_DIRTY] = "SMALL_MUT_ARR_PTRS_DIRTY",
+ [SMALL_MUT_ARR_PTRS_FROZEN_DIRTY] = "SMALL_MUT_ARR_PTRS_FROZEN_DIRTY",
+ [SMALL_MUT_ARR_PTRS_FROZEN_CLEAN] = "SMALL_MUT_ARR_PTRS_FROZEN_CLEAN",
+ [COMPACT_NFDATA]        = "COMPACT_NFDATA"
 };
 
 
@@ -185,12 +166,7 @@ StgMutArrPtrs *gtc_heap_view_closurePtrs(Capability *cap, StgClosure *closure) {
         case CONSTR_1_1:
         case CONSTR_0_2:
         case CONSTR:
-#if defined(GHC_8_0)
-        case CONSTR_STATIC:
-        case CONSTR_NOCAF_STATIC:
-#else
         case CONSTR_NOCAF:
-#endif
         case PRIM:
 
         case FUN:
@@ -253,9 +229,6 @@ StgMutArrPtrs *gtc_heap_view_closurePtrs(Capability *cap, StgClosure *closure) {
             break;
 
         case IND:
-#if defined(GHC_8_0)
-        case IND_PERM:
-#endif
         case IND_STATIC:
         case BLACKHOLE:
             ptrs[nptrs++] = (StgClosure *)(((StgInd *)closure)->indirectee);
@@ -263,23 +236,16 @@ StgMutArrPtrs *gtc_heap_view_closurePtrs(Capability *cap, StgClosure *closure) {
 
         case MUT_ARR_PTRS_CLEAN:
         case MUT_ARR_PTRS_DIRTY:
-#if defined(GHC_8_6)
         case MUT_ARR_PTRS_FROZEN_CLEAN:
         case MUT_ARR_PTRS_FROZEN_DIRTY:
-#else
-        case MUT_ARR_PTRS_FROZEN:
-        case MUT_ARR_PTRS_FROZEN0:
-#endif
             for (i = 0; i < ((StgMutArrPtrs *)closure)->ptrs; ++i) {
                 ptrs[nptrs++] = ((StgMutArrPtrs *)closure)->payload[i];
             }
             break;
         case SMALL_MUT_ARR_PTRS_CLEAN:
         case SMALL_MUT_ARR_PTRS_DIRTY:
-#if defined(GHC_8_6)
         case SMALL_MUT_ARR_PTRS_FROZEN_CLEAN:
         case SMALL_MUT_ARR_PTRS_FROZEN_DIRTY:
-#endif
             for (i = 0; i < ((StgSmallMutArrPtrs *)closure)->ptrs; ++i) {
                 ptrs[nptrs++] = ((StgSmallMutArrPtrs *)closure)->payload[i];
             }
@@ -295,7 +261,7 @@ StgMutArrPtrs *gtc_heap_view_closurePtrs(Capability *cap, StgClosure *closure) {
             break;
 
         default:
-            //fprintf(stderr,"closurePtrs: Cannot handle type %s yet\n", gtc_heap_view_closure_type_names[info->type]);
+            fprintf(stderr,"closurePtrs: Cannot handle type %s yet\n", gtc_heap_view_closure_type_names[info->type]);
             break;
     }
 
