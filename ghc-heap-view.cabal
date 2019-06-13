@@ -60,8 +60,10 @@ Flag ghc_8_0
     Default: False
 
 Flag ghc_8_2
+    Default: False
 
 Flag ghc_8_6
+    Default: True
 
 custom-setup
   setup-depends: base
