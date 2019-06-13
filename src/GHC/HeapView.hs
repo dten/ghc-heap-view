@@ -360,6 +360,11 @@ data GenClosure b =
         , mccPayload :: [b]
         -- Card table ignored
     } |
+    SmallMutArrClosure {
+        info         :: StgInfoTable
+        , mccPtrs    :: Word           -- ^ Number of pointers
+        , mccPayload :: [b]            -- ^ Array payload
+    } |
     MutVarClosure {
         info         :: StgInfoTable
         , var        :: b
@@ -408,6 +413,7 @@ allPtrs (APStackClosure {..}) = fun:payload
 allPtrs (BCOClosure {..}) = [instrs,literals,bcoptrs]
 allPtrs (ArrWordsClosure {..}) = []
 allPtrs (MutArrClosure {..}) = mccPayload
+allPtrs (SmallMutArrClosure {..}) = mccPayload
 allPtrs (MutVarClosure {..}) = [var]
 allPtrs (MVarClosure {..}) = [queueHead,queueTail,value]
 allPtrs (FunClosure {..}) = ptrArgs
@@ -629,10 +635,16 @@ getClosureData x = do
                 fail $ "Expected at least 2 words to ARR_WORDS, found " ++ show (length wds)
             return $ ArrWordsClosure itbl (wds !! 1) (drop 2 wds)
 
-        t | t == MUT_ARR_PTRS_FROZEN_CLEAN || t == MUT_ARR_PTRS_FROZEN_DIRTY -> do
+        t | t >= MUT_ARR_PTRS_CLEAN || t <= MUT_ARR_PTRS_FROZEN_CLEAN -> do
             unless (length wds >= 3) $
-                fail $ "Expected at least 3 words to MUT_ARR_PTRS_FROZEN_DIRTY found " ++ show (length wds)
+                fail $ "Expected at least 3 words to MUT_ARR_PTRS_* found " ++ show (length wds)
             return $ MutArrClosure itbl (wds !! 1) (wds !! 2) ptrs
+
+        t | t >= SMALL_MUT_ARR_PTRS_CLEAN && t <= SMALL_MUT_ARR_PTRS_FROZEN_DIRTY -> do
+            unless (length wds >= 1) $
+                fail $ "Expected at least 1 word to SMALL_MUT_ARR_PTRS_* "
+                        ++ "found " ++ show (length wds)
+            pure $ SmallMutArrClosure itbl (wds !! 0) ptrs
 
         t | t == MUT_VAR_CLEAN || t == MUT_VAR_DIRTY ->
             return $ MutVarClosure itbl (head ptrs)
@@ -713,6 +725,8 @@ ppClosure showBox prec c = case c of
         ["toArray", "("++show (length arrWords) ++ " words)", intercalate "," (shorten (map show arrWords)) ]
     MutArrClosure {..} -> app
         --["toMutArray", "("++show (length mccPayload) ++ " ptrs)",  intercalate "," (shorten (map (showBox 10) mccPayload))]
+        ["[", intercalate ", " (shorten (map (showBox 10) mccPayload)),"]"]
+    SmallMutArrClosure {..} -> app
         ["[", intercalate ", " (shorten (map (showBox 10) mccPayload)),"]"]
     MutVarClosure {..} -> app $
         ["_mutVar", (showBox 10) var]

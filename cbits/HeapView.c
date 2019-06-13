@@ -274,6 +274,16 @@ StgMutArrPtrs *gtc_heap_view_closurePtrs(Capability *cap, StgClosure *closure) {
                 ptrs[nptrs++] = ((StgMutArrPtrs *)closure)->payload[i];
             }
             break;
+        case SMALL_MUT_ARR_PTRS_CLEAN:
+        case SMALL_MUT_ARR_PTRS_DIRTY:
+#if defined(GHC_8_6)
+        case SMALL_MUT_ARR_PTRS_FROZEN_CLEAN:
+        case SMALL_MUT_ARR_PTRS_FROZEN_DIRTY:
+#endif
+            for (i = 0; i < ((StgSmallMutArrPtrs *)closure)->ptrs; ++i) {
+                ptrs[nptrs++] = ((StgSmallMutArrPtrs *)closure)->payload[i];
+            }
+            break;
         case MUT_VAR_CLEAN:
             ptrs[nptrs++] = ((StgMutVar *)closure)->var;
             break;
