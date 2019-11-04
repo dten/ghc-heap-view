@@ -62,12 +62,12 @@ import Numeric          ( showHex )
 import Data.Char
 import Data.List
 import Data.Maybe       ( catMaybes )
+#if !MIN_VERSION_GLASGOW_HASKELL(8,8,0,0)
 import Data.Monoid      ( Monoid, (<>), mempty )
+#endif
 import Data.Functor
 import Data.Function
-import Data.Foldable    ( Foldable )
 import qualified Data.Foldable as F
-import Data.Traversable ( Traversable )
 import qualified Data.Traversable as T
 import qualified Data.IntMap as M
 import Control.Monad
@@ -204,7 +204,7 @@ sizeOfPointee addr = sizeOf (typeHack addr)
 
 {-| A closure type enumeration, in order matching the actual value on the heap.
    Needs to be synchronized with
-   <http://hackage.haskell.org/trac/ghc/browser/includes/rts/storage/ClosureTypes.h>
+   <https://gitlab.haskell.org/ghc/ghc/blob/ghc-8.8/libraries/ghc-heap/GHC/Exts/Heap/ClosureTypes.hs>
  -}
 data ClosureType =
           INVALID_OBJECT
@@ -241,7 +241,7 @@ data ClosureType =
         | AP_STACK
         | IND
 #if defined(GHC_8_0)
-        | IND_PERM
+        | IND_PERM -- only exists in 8.0
 #endif
         | IND_STATIC
         | RET_BCO
@@ -278,9 +278,10 @@ data ClosureType =
         | SMALL_MUT_ARR_PTRS_DIRTY
         | SMALL_MUT_ARR_PTRS_FROZEN_DIRTY_CLEAN
         | SMALL_MUT_ARR_PTRS_FROZEN_DIRTY
-#if defined(GHC_8_2)
-        | COMPACT_NFDATA
+#if MIN_VERSION_GLASGOW_HASKELL(8,2,0,0)
+        | COMPACT_NFDATA -- new since 8.2
 #endif
+    --  | N_CLOSURE_TYPES -- just a marker, not a type
  deriving (Show, Eq, Enum, Bounded, Ord)
 
 {-| This is the main data type of this module, representing a Haskell value on
@@ -708,6 +709,7 @@ getClosureData x = do
         CATCH_RETRY_FRAME -> return $ UnsupportedClosure itbl
         CATCH_STM_FRAME -> return $ UnsupportedClosure itbl
         WHITEHOLE -> return $ UnsupportedClosure itbl
+        COMPACT_NFDATA -> return $ UnsupportedClosure itbl
 
 -- | Like 'getClosureData', but taking a 'Box', so it is easier to work with.
 getBoxedClosureData :: Box -> IO Closure

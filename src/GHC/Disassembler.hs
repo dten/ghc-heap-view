@@ -13,9 +13,6 @@ import Data.Binary.Get
 import Data.Word
 import Data.Int
 import Data.Bits
-import Data.Foldable    ( Foldable )
-import Data.Traversable ( Traversable )
-import Control.Applicative ((<$>))
 
 #include "ghcautoconf.h"
 #include "rts/Bytecodes.h"
@@ -32,7 +29,6 @@ toBytes n =
 -- byte code instructions, disassembles them into a list of byte code instructions.
 disassemble :: forall box. [box] -> [Word] -> ByteString -> [BCI box]
 disassemble ptrs lits = runGet $ do
-#ifndef GHC_7_7
     -- Ignore length tag. Needs to be skipped with GHC versions with
     -- http://hackage.haskell.org/trac/ghc/ticket/7518 included
     _ <- getWord16host
@@ -41,7 +37,6 @@ disassemble ptrs lits = runGet $ do
     _ <- getWord16host
 #endif
     _n <- getWord16host
-#endif
     nextInst
   where
     getLiteral :: Get Word

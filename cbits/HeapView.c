@@ -269,7 +269,7 @@ StgMutArrPtrs *gtc_heap_view_closurePtrs(Capability *cap, StgClosure *closure) {
     StgMutArrPtrs *arr =
         (StgMutArrPtrs *)allocate(cap, sizeofW(StgMutArrPtrs) + size);
     TICK_ALLOC_PRIM(sizeofW(StgMutArrPtrs), nptrs, 0);
-#if defined(GHC_8_6)
+#if MIN_VERSION_GLASGOW_HASKELL(8,6,0,0)
     SET_HDR(arr, &stg_MUT_ARR_PTRS_FROZEN_CLEAN_info, CCCS);
 #else
     SET_HDR(arr, &stg_MUT_ARR_PTRS_FROZEN_info, CCCS);
